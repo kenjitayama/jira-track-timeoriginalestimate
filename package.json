@@ -1,0 +1,17 @@
+{
+  "name": "jira-track-timeoriginalestimate",
+  "version": "0.0.1",
+  "description": "Sums up Original Estimate Time for issues in the current sprint",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "JIRA"
+  ],
+  "author": "Kenji Tayama",
+  "license": "ISC",
+  "dependencies": {
+    "jira-client": "^4.2.0"
+  }
+}
