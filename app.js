@@ -1,26 +1,3 @@
-/*
-
-Sums up Original Estimate Time for issues in the current sprint.
-
-Output CSV format:
-totalIssueCount,resolvedIssueCount,totalTimeOriginalEstimate(seconds),resolvedTimeOriginalEstimate(seconds)
-
-Issues are counted only if they have a non-zero Original Estimate Time.
-
-
-Necessary environment variables:
-JIRA_TRACK_TIMEORIGINALESTIMATE_HOST,
-JIRA_TRACK_TIMEORIGINALESTIMATE_PORT (default: 443),
-JIRA_TRACK_TIMEORIGINALESTIMATE_USERNAME,
-JIRA_TRACK_TIMEORIGINALESTIMATE_PASSWORD,
-JIRA_TRACK_TIMEORIGINALESTIMATE_APIVERSION (default: 2)
-
-Usage:
-node app.js myProjectName
-
-*/
-
-
 const JiraApi = require('jira-client');
 
 const host = process.env.JIRA_TRACK_TIMEORIGINALESTIMATE_HOST;
@@ -51,6 +28,9 @@ const jira = new JiraApi({
   strictSSL: true
 });
 
+
+const now = new Date();
+
 jira.searchJira(`project = ${project} AND sprint in openSprints()`, {
   fields: ['timeoriginalestimate', 'resolution']
 })
@@ -62,12 +42,14 @@ jira.searchJira(`project = ${project} AND sprint in openSprints()`, {
   let resolvedCount = 0;
   let totalTime = 0;
   let resolvedTime = 0;
+  let lastKey = null;
 
   issues.forEach(issue => {
 
     const fields = issue.fields;
     const resolution = fields.resolution;
     const time = fields.timeoriginalestimate;
+    lastKey = issue.key;
 
     if (!time) {
       return;
@@ -80,10 +62,26 @@ jira.searchJira(`project = ${project} AND sprint in openSprints()`, {
       resolvedCount++;
       resolvedTime += time;
     }
-  })
+  });
 
-  console.log(`${totalCount},${resolvedCount},${totalTime},${resolvedTime}`);
+
+  jira.findIssue(lastKey)
+  .then(response => {
+
+    const resStr = JSON.stringify(response);
+    const match = resStr.match(/com\.atlassian\.greenhopper\.service\.sprint\.Sprint.*name=(.*?),/);
+    if (!match) {
+      console.error('failed to find sprint name from response');
+      process.exit(1);
+    }
+    const sprint = match[1];
+    console.log(`${now.toISOString()},${sprint},${totalCount},${resolvedCount},${totalTime},${resolvedTime}`);
+  })
+  .catch(err => {
+    console.error(err);
+  });
+
 })
 .catch(err => {
   console.error(err);
-})
+});
