@@ -1,5 +1,6 @@
 # jira-track-timeoriginalestimate
-Sums up Original Estimate Time for issues in the active sprint. Multiple active sprints not supported.
+Adds up Original Estimate Time for issues in the active sprint and output as CSV. Multiple active sprints not supported.
+Useful if you are setting Original Estimate Time to Sub-tasks, because JIRA does not add them up in any screens, such as burndown charts.
 
 
 ## Output CSV format
