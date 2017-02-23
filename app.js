@@ -69,7 +69,7 @@ jira.searchJira(`project = ${project} AND sprint in openSprints()`, {
   .then(response => {
 
     const resStr = JSON.stringify(response);
-    const match = resStr.match(/com\.atlassian\.greenhopper\.service\.sprint\.Sprint.*name=(.*?),/);
+    const match = resStr.match(/com\.atlassian\.greenhopper\.service\.sprint\.Sprint.*?name=(.*?),/);
     if (!match) {
       console.error('failed to find sprint name from response');
       process.exit(1);
