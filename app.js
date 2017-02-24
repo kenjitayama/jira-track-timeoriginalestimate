@@ -28,27 +28,52 @@ const jira = new JiraApi({
   strictSSL: true
 });
 
+const query = `project = ${project} AND sprint in openSprints()`;
+
+function searchWithPagination(query, startAt, responseHandler, completion) {
+
+  jira.searchJira(query, {
+    fields: ['timeoriginalestimate', 'resolution'],
+    startAt: startAt
+  })
+  .then((response) => {
+
+    responseHandler(response);
+
+    const {startAt, maxResults, total} = response;
+    const count = response.issues.length;
+    const nextStartAt = startAt + count;
+
+    if (nextStartAt < total) {
+      searchWithPagination(query, nextStartAt, responseHandler, completion);
+    } else {
+      completion();
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    process.exit(1);
+  });
+}
+
 
 const now = new Date();
+let totalCount = 0;
+let resolvedCount = 0;
+let totalTime = 0;
+let resolvedTime = 0;
+let lastKey = null;
 
-jira.searchJira(`project = ${project} AND sprint in openSprints()`, {
-  fields: ['timeoriginalestimate', 'resolution']
-})
-.then(response => {
+searchWithPagination(query, 0, (response) => {
 
   const issues = response.issues;
 
-  let totalCount = 0;
-  let resolvedCount = 0;
-  let totalTime = 0;
-  let resolvedTime = 0;
-  let lastKey = null;
-
-  issues.forEach(issue => {
+  issues.forEach((issue) => {
 
     const fields = issue.fields;
     const resolution = fields.resolution;
     const time = fields.timeoriginalestimate;
+
     lastKey = issue.key;
 
     if (!time) {
@@ -64,9 +89,10 @@ jira.searchJira(`project = ${project} AND sprint in openSprints()`, {
     }
   });
 
-
+}, () => {
+  
   jira.findIssue(lastKey)
-  .then(response => {
+  .then((response) => {
 
     const resStr = JSON.stringify(response);
     const match = resStr.match(/com\.atlassian\.greenhopper\.service\.sprint\.Sprint.*?name=(.*?),/);
@@ -75,13 +101,18 @@ jira.searchJira(`project = ${project} AND sprint in openSprints()`, {
       process.exit(1);
     }
     const sprint = match[1];
-    console.log(`${now.toISOString()},${sprint},${totalCount},${resolvedCount},${totalTime},${resolvedTime}`);
+    const vals = [
+      now.toISOString(),
+      sprint,
+      totalCount,
+      resolvedCount,
+      totalTime,
+      resolvedTime
+    ];
+    console.log(vals.join(','));
   })
   .catch(err => {
     console.error(err);
+    process.exit(1);
   });
-
-})
-.catch(err => {
-  console.error(err);
 });
