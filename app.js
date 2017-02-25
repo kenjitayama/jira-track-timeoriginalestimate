@@ -106,8 +106,10 @@ searchWithPagination(query, 0, (response) => {
       sprint,
       totalCount,
       resolvedCount,
+      totalCount - resolvedCount, // remaining count
       totalTime,
-      resolvedTime
+      resolvedTime,
+      totalTime - resolvedTime // remaining time
     ];
     console.log(vals.join(','));
   })

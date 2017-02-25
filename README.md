@@ -6,7 +6,7 @@ Useful if you are setting Original Estimate Time to Sub-tasks, because JIRA does
 ## Output CSV format
 
 ```
-dateStringInISO8601,sprintName,totalIssueCount,resolvedIssueCount,totalTimeOriginalEstimate(seconds),resolvedTimeOriginalEstimate(seconds)
+dateStringInISO8601,sprintName,totalIssueCount,resolvedIssueCount,remainingIssueCount,totalTimeOriginalEstimate(seconds),resolvedTimeOriginalEstimate(seconds),remainingTimeOriginalEstimate(seconds)
 ```
 
 example:
