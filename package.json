@@ -12,6 +12,8 @@
   "author": "Kenji Tayama",
   "license": "ISC",
   "dependencies": {
+    "google-auth-library": "^0.10.0",
+    "googleapis": "^17.1.0",
     "jira-client": "^4.2.0"
   }
 }

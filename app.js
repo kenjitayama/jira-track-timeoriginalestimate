@@ -1,5 +1,9 @@
 const JiraApi = require('jira-client');
+const Sheets = require('./googleSheets');
 
+//
+// environment variables
+// 
 const host = process.env.JIRA_TRACK_TIMEORIGINALESTIMATE_HOST;
 const port = process.env.JIRA_TRACK_TIMEORIGINALESTIMATE_PORT || 443;
 const username = process.env.JIRA_TRACK_TIMEORIGINALESTIMATE_USERNAME;
@@ -11,12 +15,15 @@ if ( !(host && port && username && password) ) {
   process.exit(1);
 }
 
-if (process.argv.length != 3) {
-  console.error('usage: node app.js myProjectName');
+//
+// commandline args
+//
+if (process.argv.length < 3) {
+  console.error('usage: node app.js myProjectName [Google Spreadsheets documentID] [Google Spreadsheets sheet name] ');
   process.exit(1);
 }
+const [ , , project, sheetDocID, sheetName] = process.argv
 
-const project = process.argv[2];
 
 const jira = new JiraApi({
   protocol: 'https',
@@ -112,6 +119,11 @@ searchWithPagination(query, 0, (response) => {
       totalTime - resolvedTime // remaining time
     ];
     console.log(vals.join(','));
+
+    // output to Google Spreadsheets if documentID and sheetName provided
+    if (sheetDocID && sheetName) {
+      Sheets.appendRow(vals, sheetDocID, sheetName);
+    }
   })
   .catch(err => {
     console.error(err);
